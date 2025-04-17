@@ -1,0 +1,29 @@
+name: checks
+
+on:
+  pull_request:
+
+jobs:
+  checks:
+    name: checks
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out the repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python 3.x
+      uses: actions/setup-python@v3
+      with:
+        python-version: 3.10.8
+        
+    - name: Install dependencies
+      run: |
+        pip install --upgrade pip
+        pip install mypy ruff
+        pip install -r requirements-test.txt
+
+    - name: Run checks
+      run: |
+        ruff check $(git ls-files '*.py')
+        ruff format --check $(git ls-files '*.py')
+        mypy $(git ls-files '*.py')

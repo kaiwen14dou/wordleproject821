@@ -1,0 +1,101 @@
+name: tests
+
+on:
+  pull_request:
+
+jobs:
+  tests:
+    name: tests
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out the repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python 3.x
+      uses: actions/setup-python@v3
+      with:
+        python-version: 3.10.8
+
+    - name: Install dependencies
+      run: |
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        if [ -f requirements-test.txt ]; then pip install -r requirements-test.txt; fi
+
+    - name: Run pytest
+      continue-on-error: true
+      run: |
+        if [ -d tests/ ]; then
+          code=$(
+            coverage run --source=src/ -m pytest tests/ > test_report.txt
+            echo $?
+          )
+          echo $code > exit_code.txt
+        else
+          echo 0 > exit_code.txt
+        fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Check coverage
+      run: |
+        if [ -f .coverage ]; then
+          git fetch -q origin ${{ github.event.pull_request.head.ref }} --depth $(( ${{ github.event.pull_request.commits }} + 1 ))
+          git fetch -q origin ${{ github.event.pull_request.base.ref }}
+          coverage json -q
+          git diff ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} > diff.txt
+          threshold_pct=0
+          diff_status=$(
+            python .github/workflows/diff_coverage.py --threshold $threshold_pct diff.txt coverage.json > diff_coverage.txt
+            echo $?
+          )
+          total_pct=$(jq ".totals.percent_covered" coverage.json)
+          if (( $(echo "$diff_status == 0" | bc) )) && (( $(echo "$total_pct >= $threshold_pct" | bc) )); then
+            status=success;
+          else
+            status=failure;
+          fi
+          message="status: ${status^^}"
+          REPORT=$message
+          REPORT+=$'\nDiff coverage is '
+          if [[ "$diff_status" = 0 ]]; then
+            tmp=">=$threshold_pct%:"
+          else
+            tmp="<$threshold_pct%:"
+          fi
+          REPORT+=$tmp
+          REPORT+=$'\n```\n'
+          REPORT+=$(cat diff_coverage.txt)
+          REPORT+=$'\n```'
+          REPORT+=$'\nTotal coverage is '
+          if (( $(echo "$total_pct >= $threshold_pct" | bc) )); then
+            tmp=">=$threshold_pct%:"
+          else
+            tmp="<$threshold_pct%:"
+          fi
+          REPORT+=$tmp
+          REPORT+=$'\n```\n'
+          REPORT+=$(coverage report -m)
+          REPORT+=$'\n```'
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            /repos/${{ github.repository }}/issues/${{ github.event.number }}/comments \
+            -f body="$REPORT" \
+            > comment_response.json
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            repos/${{ github.repository }}/statuses/${{ github.event.pull_request.head.sha }} \
+            -f state="$status" \
+            -f context='tests / coverage (pull_request)' \
+            -f description="$message" \
+            -f target_url=$(jq -r ".html_url" comment_response.json)
+            &> /dev/null
+        fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Print report and exit with code
+      run: |
+        cat test_report.txt
+        exit $(cat exit_code.txt)
