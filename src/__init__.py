@@ -1,1 +1,1 @@
-"""Initialize src package."""
+"""Initialize src package wordle."""
