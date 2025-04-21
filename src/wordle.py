@@ -93,6 +93,13 @@ class Wordle:
 
         return "".join(feedback)
 
+    @staticmethod
+    def feedback_to_emoji(feedback: str) -> str:
+        """Give the emoji feedbacks."""
+        return (
+            feedback.replace("G", "🟩").replace("Y", "🟨").replace("_", "⬜")
+        )
+
     def get_attempts(self) -> list[tuple[str, str]]:
         """Retrieve all guesses and their feedback.
 
