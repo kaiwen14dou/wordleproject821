@@ -3,7 +3,7 @@
 import random
 import sys
 
-from src.wordle import Wordle
+from wordle import Wordle
 
 with open("data/word_doc.txt") as f:
     word_list: list[str] = [line.strip().lower() for line in f]
