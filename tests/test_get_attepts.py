@@ -10,4 +10,4 @@ def test_get_attempts() -> None:
     attempts = game.get_attempts()
     assert len(attempts) == 1
     assert attempts[0][0] == "zebra"
-    assert len(attempts[0][1]) == 5  # feedback string
+    assert len(attempts[0][1]) == 5

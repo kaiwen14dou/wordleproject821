@@ -1,7 +1,10 @@
 """Running the game in terminal."""
 
+import os
 import random
 import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "src"))
 
 from wordle import Wordle
 
