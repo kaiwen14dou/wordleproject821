@@ -7,7 +7,7 @@ PyWordle is a terminal-based implementation of the classic Wordle game in Python
 ## Project Features
 
 - Clean and modular game logic via a `Wordle` class
-- Accurate feedback for guesses, including correct handling of repeated letters
+- Accurate feedback for guesses using `Feedback` enums (`GREEN`, `YELLOW`, `GRAY`)
 - Emoji output for visual feedback: 🟩 (correct), 🟨 (misplaced), ⬜ (wrong)
 - Full set of unit tests for functionality, edge cases, and input validation
 - Terminal-based gameplay with `run_game.py`
@@ -44,26 +44,22 @@ From the project root, run:
 
 This launches a game session using a randomly selected secret word from word_doc.txt. Type your guess and press Enter. You have 6 tries to guess the word.
 
-To exit the game at any time, type: exit
+To exit the game at any time, type: `exit`
 
 
 ## Core Class: Wordle
 
 ### Key Methods
 
-`guess(word: str) -> str` — submit a guess and get feedback as a string like 'GY_G_'
-
-`feedback_to_emoji(feedback: str) -> str` — convert feedback to emoji visuals
-
-`get_attempts() -> list[tuple[str, str]]` — access the list of past guesses and feedback
-
-`game_status() -> str` — returns game outcome: "Won", "Lost. The word was '____'", or "In Progress"
+- `guess(word: str) -> list[Feedback]` — submit a guess and get structured feedback as a list of enums
+- `feedback_to_emoji(feedback: list[Feedback]) -> str` — convert enum feedback to emoji visuals
+- `game_status() -> str` — returns game outcome: "Won", "Lost. The word was '____'", or "In Progress"
 
 ### Error Handling
 
-Raises `ValueError` for invalid guesses (e.g. wrong length or characters)
+- Raises `ValueError` for invalid guesses (e.g. wrong length or characters)
+- Raises `Exception` if guesses are submitted after the game is over
 
-Raises `Exception` if guesses are submitted after game is over
 
 ## Running Tests
 All tests use `pytest`. To run them:
@@ -72,7 +68,7 @@ All tests use `pytest`. To run them:
    pytest tests/
    ```
 
-Make sure pytest is installed:
+Make sure `pytest` is installed:
 
    ```sh
    pip install pytest
@@ -82,24 +78,18 @@ Make sure pytest is installed:
 
 We test the following scenarios:
 
-✅ Emoji feedback generation
-
-✅ Handling of repeated letters
-
-✅ Full match (correct guess)
-
-✅ Game status: in progress, win, and loss
-
-✅ Attempt logging and history
-
-✅ Input validation and error handling
+- ✅ Emoji feedback generation using enums
+- ✅ Handling of repeated letters
+- ✅ Full match (correct guess)
+- ✅ Game status: in progress, win, and loss
+- ✅ Attempt logging and feedback tracking
+- ✅ Input validation and error handling
 
 Run `pytest -v` for detailed results.
 
 ## Authors
 
-Keru Zhou
-
-Kaiwen Lu
+- Keru Zhou
+- Kaiwen Lu
 
 We hope you enjoy playing PyWordle as much as we enjoyed building it 🎉

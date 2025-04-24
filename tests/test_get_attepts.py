@@ -1,13 +1,10 @@
 """Testing the get attmept is correct."""
 
-from wordle import Wordle
+from wordle import Feedback, Wordle
 
 
 def test_get_attempts() -> None:
-    """Testing the attmept is correct."""
+    """Test that attempts list stores (guess, feedback) correctly."""
     game = Wordle(secret_word="candy")
-    game.guess("zebra")
-    attempts = game.get_attempts()
-    assert len(attempts) == 1
-    assert attempts[0][0] == "zebra"
-    assert len(attempts[0][1]) == 5
+    result = game.guess("zebra")
+    assert game.attempts == [("zebra", result)]

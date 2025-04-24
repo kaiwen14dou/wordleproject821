@@ -2,14 +2,14 @@
 
 import pytest
 
-from wordle import Wordle
+from wordle import Feedback, Wordle
 
 
 def test_correct_guess_wins() -> None:
-    """Test cases on right guess."""
+    """Return all GREEN feedback and sets game as won when guess is correct."""
     game = Wordle(secret_word="apple")
     feedback = game.guess("apple")
-    assert feedback == "GGGGG"
+    assert feedback == [Feedback.GREEN] * 5
     assert game.is_won
     assert game.is_over
 

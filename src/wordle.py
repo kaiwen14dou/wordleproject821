@@ -1,6 +1,15 @@
 """Generate a new game called wordle."""
 
 from collections import Counter
+from enum import Enum
+
+
+class Feedback(Enum):
+    """A class to define feedback."""
+
+    GREEN = "G"
+    YELLOW = "Y"
+    GRAY = "_"
 
 
 class Wordle:
@@ -32,11 +41,11 @@ class Wordle:
             )
         self.secret_word: str = secret_word.lower()
         self.max_attempts: int = max_attempts
-        self.attempts: list[tuple[str, str]] = []
+        self.attempts: list[tuple[str, list[Feedback]]] = []
         self.is_won: bool = False
         self.is_over: bool = False
 
-    def guess(self, word: str) -> str:
+    def guess(self, word: str) -> list[Feedback]:
         """Submit a guess and receive feedback on letter correctness and.
 
         positions.
@@ -45,7 +54,7 @@ class Wordle:
             word (str): A 5-letter guess.
 
         Returns:
-            str: A 5-character string of feedback ('G' for correct, 'Y'
+            list[Feedback]:  'G' for correct, 'Y'
             for wrong position, '_' for incorrect).
 
         Raises:
@@ -69,57 +78,48 @@ class Wordle:
 
         return feedback
 
-    def _generate_feedback(self, guess: str) -> str:
+    def _generate_feedback(self, guess: str) -> list[Feedback]:
         """Generate feedback for a given guess compared to the secret word.
 
         Args:
             guess (str): The guessed word.
 
         Returns:
-            str: Feedback string composed of 'G', 'Y', and '_' characters.
+            list[Feedback]: Feedback composed of 'G', 'Y', and '_' characters.
         """
-        feedback = ["_"] * 5
+        feedback = [Feedback.GRAY] * 5
         secret_temp = list(self.secret_word)
 
         # First pass: correct position
         for i in range(5):
-            if guess[i] == self.secret_word[i]:
-                feedback[i] = "G"
-                secret_temp[i] = "*"  # Mark this letter as used
+            if guess[i] == secret_temp[i]:
+                feedback[i] = Feedback.GREEN
+                secret_temp[i] = "*"
 
         # Count remaining letters (only non-green ones)
         remaining_letters = Counter(c for c in secret_temp if c is not None)
 
-        # Second pass: handle yellows
+        # Second pass: correct letter, wrong position
         for i in range(5):
             if (
-                feedback[i] == "_"
+                feedback[i] == Feedback.GRAY
                 and guess[i] in remaining_letters
                 and remaining_letters[guess[i]] > 0
             ):
-                feedback[i] = "Y"
+                feedback[i] = Feedback.YELLOW
                 remaining_letters[guess[i]] -= 1
 
-        return "".join(feedback)
+        return feedback
 
     @staticmethod
-    def feedback_to_emoji(feedback: str) -> str:
+    def feedback_to_emoji(feedback: list[Feedback]) -> str:
         """Give the emoji feedbacks."""
-        valid = {"G", "Y", "_"}
-        if not all(char in valid for char in feedback):
-            raise ValueError("Feedback string contains invalid characters.")
-        return (
-            feedback.replace("G", "🟩").replace("Y", "🟨").replace("_", "⬜")
-        )
-
-    def get_attempts(self) -> list[tuple[str, str]]:
-        """Retrieve all guesses and their feedback.
-
-        Returns:
-            list[tuple[str, str]]: A list of tuples containing guesses
-            and their feedback.
-        """
-        return self.attempts
+        mapping = {
+            Feedback.GREEN: "🟩",
+            Feedback.YELLOW: "🟨",
+            Feedback.GRAY: "⬜",
+        }
+        return "".join(mapping[f] for f in feedback)
 
     def game_status(self) -> str:
         """Get the current game status.
