@@ -32,18 +32,18 @@ while not game.is_over:
 
     try:
         feedback = game.guess(guess)
+        emoji_feedback = Wordle.feedback_to_emoji(feedback)
 
-        print("🟩🟨⬜ Feedback:", Wordle.feedback_to_emoji(feedback))
+        print("🟩🟨⬜ Feedback:", emoji_feedback)
         print(f"📊 Attempts left: {game.max_attempts - len(game.attempts)}\n")
 
     except (ValueError, Exception) as e:
         print("❌", e)
 
-
 print("\n📢 Game Over:", game.game_status())
 print("📝 All attempts:")
 
-for i, (word, fb) in enumerate(game.attempts(), start=1):
+for i, (word, fb) in enumerate(game.attempts, start=1):
     print(f"Round {i}: {word.upper()} → {Wordle.feedback_to_emoji(fb)}")
 
 sys.exit(0 if game.is_won else 2)
