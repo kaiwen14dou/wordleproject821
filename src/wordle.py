@@ -1,5 +1,7 @@
 """Generate a new game called wordle."""
 
+from collections import Counter
+
 
 class Wordle:
     """A class to represent the Wordle game logic.
@@ -85,17 +87,27 @@ class Wordle:
                 feedback[i] = "G"
                 secret_temp[i] = "*"  # Mark this letter as used
 
-        # Second pass: wrong position but correct letter
+        # Count remaining letters (only non-green ones)
+        remaining_letters = Counter(c for c in secret_temp if c is not None)
+
+        # Second pass: handle yellows
         for i in range(5):
-            if feedback[i] == "_" and guess[i] in secret_temp:
+            if (
+                feedback[i] == "_"
+                and guess[i] in remaining_letters
+                and remaining_letters[guess[i]] > 0
+            ):
                 feedback[i] = "Y"
-                secret_temp[secret_temp.index(guess[i])] = "*"
+                remaining_letters[guess[i]] -= 1
 
         return "".join(feedback)
 
     @staticmethod
     def feedback_to_emoji(feedback: str) -> str:
         """Give the emoji feedbacks."""
+        valid = {"G", "Y", "_"}
+        if not all(char in valid for char in feedback):
+            raise ValueError("Feedback string contains invalid characters.")
         return (
             feedback.replace("G", "🟩").replace("Y", "🟨").replace("_", "⬜")
         )
