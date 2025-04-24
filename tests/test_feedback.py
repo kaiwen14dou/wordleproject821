@@ -15,3 +15,10 @@ def test_allcorrect() -> None:
     game = Wordle(secret_word="plant")
     result = game._generate_feedback("plant")
     assert result == "GGGGG"
+
+
+def test_feedback_repeated_letters() -> None:
+    """Feedback with repeated letters in guess ('sassy' vs 'spasm')."""
+    game = Wordle(secret_word="spasm")
+    result = game._generate_feedback("sassy")  # should not double count 's'
+    assert result == "GY_G_"
