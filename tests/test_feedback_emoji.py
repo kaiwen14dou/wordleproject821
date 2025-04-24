@@ -1,7 +1,5 @@
 """Testing feedback converting to emoji."""
 
-import pytest
-
 from wordle import Feedback, Wordle
 
 

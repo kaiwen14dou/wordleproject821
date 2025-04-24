@@ -1,6 +1,6 @@
 """Testing the get attmept is correct."""
 
-from wordle import Feedback, Wordle
+from wordle import Wordle
 
 
 def test_get_attempts() -> None:
